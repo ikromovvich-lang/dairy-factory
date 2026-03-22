@@ -72,3 +72,9 @@ export const timeAgo = (d) => {
   const days = Math.floor(hours / 24);
   return `${days} kun oldin`;
 };
+export const today = () => new Date().toISOString().split('T')[0];
+
+export const todayFormatted = () =>
+  new Date().toLocaleDateString('ru-RU', {
+    day: '2-digit', month: '2-digit', year: 'numeric'
+  });
