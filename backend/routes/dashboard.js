@@ -3,12 +3,18 @@ const router = express.Router();
 const { Pool } = require('pg');
 const { authenticate } = require('../middleware/auth');
 
-const pool = new Pool({
-  host: process.env.DB_HOST || 'localhost',
-  database: process.env.DB_NAME || 'dairy_factory',
-  user: process.env.DB_USER || 'dairy_admin',
-  password: process.env.DB_PASSWORD, port: 5432,
-});
+const pool = process.env.DATABASE_URL
+  ? new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { require: true, rejectUnauthorized: false },
+    })
+  : new Pool({
+      host: process.env.DB_HOST || 'localhost',
+      database: process.env.DB_NAME || 'dairy_factory',
+      user: process.env.DB_USER || 'dairy_admin',
+      password: process.env.DB_PASSWORD,
+      port: 5432,
+    });
 
 router.get('/summary', authenticate, async (req, res) => {
   const fId = req.user.factory_id;
@@ -18,7 +24,7 @@ router.get('/summary', authenticate, async (req, res) => {
     pool.query(`SELECT COUNT(*) as count FROM notifications WHERE factory_id=$1 AND is_read=false`, [fId]),
     pool.query(`SELECT batch_number, product_type, quantity_produced, unit, production_date, expiration_date, status FROM production_batches WHERE factory_id=$1 ORDER BY created_at DESC LIMIT 5`, [fId]),
   ]);
-  
+
   res.json({
     today_milk_liters: parseFloat(todayMilk.rows[0].liters),
     today_milk_count: parseInt(todayMilk.rows[0].count),
