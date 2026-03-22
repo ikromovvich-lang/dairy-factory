@@ -1,12 +1,17 @@
 FROM node:20-alpine as build
 WORKDIR /app
+
 COPY package.json ./
 RUN npm install --legacy-peer-deps
+RUN npm install ajv@^8.12.0 --legacy-peer-deps
+
 COPY . .
+
 ARG REACT_APP_API_URL=http://localhost:5000
 ARG REACT_APP_WS_URL=ws://localhost:5000
 ENV REACT_APP_API_URL=$REACT_APP_API_URL
 ENV REACT_APP_WS_URL=$REACT_APP_WS_URL
+
 RUN npm run build
 
 FROM nginx:alpine
