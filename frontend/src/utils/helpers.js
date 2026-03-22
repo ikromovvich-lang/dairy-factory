@@ -61,3 +61,14 @@ export const getExpiryColor = (d) => {
 
 export const productClass = (type) => `product-${type}`;
 export const qualityClass = (grade) => `quality-${grade}`;
+export const timeAgo = (d) => {
+  if (!d) return '—';
+  const seconds = Math.floor((Date.now() - new Date(d)) / 1000);
+  if (seconds < 60) return 'Hozirgina';
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes} daqiqa oldin`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} soat oldin`;
+  const days = Math.floor(hours / 24);
+  return `${days} kun oldin`;
+};
