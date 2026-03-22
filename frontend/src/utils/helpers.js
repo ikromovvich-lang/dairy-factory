@@ -114,3 +114,9 @@ export const groupBy = (arr, key) =>
     acc[group].push(item);
     return acc;
   }, {});
+export const PRODUCT_NAMES = {
+  milk: 'Sut',
+  yogurt: 'Yogurt',
+  tvorog: 'Tvorog',
+  smetana: 'Smetana'
+};
