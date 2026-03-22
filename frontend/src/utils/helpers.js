@@ -78,3 +78,39 @@ export const todayFormatted = () =>
   new Date().toLocaleDateString('ru-RU', {
     day: '2-digit', month: '2-digit', year: 'numeric'
   });
+
+export const getExpiryBadge = (d) => {
+  const days = daysUntilExpiry(d);
+  if (days == null) return { text: '—', class: '' };
+  if (days <= 0) return { text: '⛔ Tugagan', class: 'badge-danger' };
+  if (days <= 2) return { text: `⚠️ ${days} kun`, class: 'badge-danger' };
+  if (days <= 5) return { text: `⏰ ${days} kun`, class: 'badge-warning' };
+  return { text: `✅ ${days} kun`, class: 'badge-success' };
+};
+
+export const getStatusBadge = (status) => {
+  const map = {
+    completed: { text: '✅ Tayyor', class: 'badge-success' },
+    in_progress: { text: '⚙️ Jarayonda', class: 'badge-warning' },
+    planned: { text: '📋 Rejalashtirilgan', class: 'badge-info' },
+    rejected: { text: '❌ Rad etildi', class: 'badge-danger' },
+    pending: { text: '⏳ Kutilmoqda', class: 'badge-warning' },
+    delivered: { text: '✅ Yetkazildi', class: 'badge-success' },
+    cancelled: { text: '❌ Bekor', class: 'badge-danger' },
+  };
+  return map[status] || { text: status, class: 'badge-info' };
+};
+
+export const formatPercent = (n) =>
+  n == null ? '—' : `${parseFloat(n).toFixed(1)}%`;
+
+export const sumBy = (arr, key) =>
+  arr.reduce((a, b) => a + parseFloat(b[key] || 0), 0);
+
+export const groupBy = (arr, key) =>
+  arr.reduce((acc, item) => {
+    const group = item[key];
+    if (!acc[group]) acc[group] = [];
+    acc[group].push(item);
+    return acc;
+  }, {});
