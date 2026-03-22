@@ -8,6 +8,7 @@ const helmet = require('helmet');
 const compression = require('compression');
 const morgan = require('morgan');
 const path = require('path');
+const rateLimit = require('express-rate-limit');
 
 const { initDatabase } = require('./config/database');
 const { initSocket } = require('./utils/socket');
@@ -25,24 +26,22 @@ const notificationRoutes = require('./routes/notifications');
 const dashboardRoutes = require('./routes/dashboard');
 
 const app = express();
+app.set('trust proxy', 1);
 const server = http.createServer(app);
 
-app.use(helmet({
-  crossOriginResourcePolicy: { policy: 'cross-origin' },
-}));
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 
 app.use(cors({
   origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
     const allowed = [
       process.env.FRONTEND_URL,
       'http://localhost:3000',
-      'https://enthusiastic-truth-production-bd03.up.railway.app',
     ].filter(Boolean);
-
-    if (!origin || allowed.includes(origin) || /\.railway\.app$/.test(origin)) {
+    if (allowed.includes(origin) || /\.railway\.app$/.test(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('CORS: ruxsat yo\'q — ' + origin));
+      callback(null, true);
     }
   },
   credentials: true,
@@ -51,16 +50,26 @@ app.use(cors({
 }));
 
 app.options('*', cors());
-
 app.use(compression());
 app.use(morgan('combined', { stream: { write: msg => logger.info(msg.trim()) } }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-const rateLimit = require('express-rate-limit');
-app.use('/api/auth', rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: { error: 'Too many requests' } }));
-app.use('/api', rateLimit({ windowMs: 1 * 60 * 1000, max: 300 }));
+app.use('/api/auth', rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 50,
+  message: { error: 'Too many requests' },
+  standardHeaders: true,
+  legacyHeaders: false,
+}));
+
+app.use('/api', rateLimit({
+  windowMs: 1 * 60 * 1000,
+  max: 500,
+  standardHeaders: true,
+  legacyHeaders: false,
+}));
 
 app.get('/api/health', (req, res) => {
   res.json({
