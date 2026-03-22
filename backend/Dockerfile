@@ -5,7 +5,8 @@ WORKDIR /app
 RUN apk add --no-cache python3 make g++ cairo-dev pango-dev libjpeg-turbo-dev giflib-dev
 
 COPY package*.json ./
-RUN npm ci --only=production
+
+RUN npm install --only=production
 
 COPY . .
 
